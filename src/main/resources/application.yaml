@@ -4,3 +4,20 @@ server:
 spring:
   application:
     name: gateway
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - info
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: Orvix Gateway
+    version: 1.0.0
+    description: Orvix Gateway microservice

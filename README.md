@@ -31,3 +31,26 @@
     java -jar target/orvix-gateway-0.0.1-SNAPSHOT.jar
 
 ⚠️⚠️⚠️ Make sure you are in the root directory of the project when executing these commands.
+
+## Microservice Endpoints
+
+The microservice exposes the following Actuator endpoints, which can be used for health checks and informational purposes in a Kubernetes environment:
+
+| Endpoint               | Description                                   |
+|------------------------|-----------------------------------------------|
+| **`/actuator/health`** | Returns the health status of the application  |
+| **`/actuator/info`**   | Provides general application information      |
+
+### Testing Locally
+
+You can test the endpoints locally using `curl`:
+
+```bash
+curl http://localhost:8080/actuator/health
+```
+
+and
+
+```bash
+curl http://localhost:8080/actuator/health
+```
