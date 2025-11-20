@@ -4,6 +4,16 @@ server:
 spring:
   application:
     name: gateway
+  cloud:
+    kubernetes:
+      discovery:
+        enabled: true
+        all-namespaces: false
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
 
 management:
   endpoints:
