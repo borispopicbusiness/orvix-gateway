@@ -6,9 +6,13 @@ spring:
     name: gateway
   cloud:
     kubernetes:
+      client:
+        namespace: dev
       discovery:
         enabled: true
-        all-namespaces: false
+        namespaces:
+          - dev
+        include-not-ready-addresses: false
     gateway:
       discovery:
         locator:
