@@ -10,7 +10,7 @@ RUN mvn -q -e -B clean package -DskipTest
 # Runtime image:
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
-copy --from=build /app/target/*.jar app.jar
+COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080
 
