@@ -11,13 +11,15 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 @EnableWebFluxSecurity
 public class SecurityConfiguration {
     @Bean
-    public SecurityWebFilterChain securityFilterChain(ServerHttpSecurity http) throws Exception {
-        return http
-                .csrf(ServerHttpSecurity.CsrfSpec::disable)
-                .authorizeExchange(auth -> auth
-                        .pathMatchers("/actuator/**").permitAll()
-                        .pathMatchers("/public/**").permitAll()
-                        .anyExchange().authenticated()
-        ).httpBasic(Customizer.withDefaults()).build();
+    public SecurityWebFilterChain securityWebFluxFilterChain(ServerHttpSecurity http) {
+         http
+             .csrf(ServerHttpSecurity.CsrfSpec::disable)
+             .authorizeExchange(auth -> auth
+                     .pathMatchers("/actuator/**", "/public/**").permitAll()
+                     .anyExchange().authenticated()
+             )
+             .httpBasic(Customizer.withDefaults());
+
+         return http.build();
     }
 }
