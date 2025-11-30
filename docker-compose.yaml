@@ -7,11 +7,7 @@ services:
     hostname: keycloak.local
     ports:
       - "9090:8080"
-#    deploy:
-#      resources:
-#        limits:
-#          cpus: "1"
-#          memory: 1500m
+    # The mem_limit is still a valid YAML field in Docker due to backward compatibility with v2.
     mem_limit: 2g
     environment:
       - KC_BOOTSTRAP_ADMIN_USERNAME=admin
@@ -22,7 +18,7 @@ services:
       - kc-v-log:/opt/keycloak/log
     command: ["start-dev"]
     networks:
-      - network
+      - orvix-local-dev-network
 
 volumes:
   kc-v-data:
@@ -33,5 +29,5 @@ volumes:
     name: kc-log
 
 networks:
-  network:
+  orvix-local-dev-network:
     driver: bridge
