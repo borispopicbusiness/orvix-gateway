@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  keycloak:
+    image: keycloak/keycloak:26.4.6
+    container_name: keycloak-local-dev
+    hostname: keycloak.local
+    ports:
+      - "9090:8080"
+    # The mem_limit is still a valid YAML field in Docker due to backward compatibility with v2.
+    mem_limit: 2g
+    environment:
+      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
+    volumes:
+      - kc-v-data:/opt/keycloak/data
+      - kc-v-providers:/opt/keycloak/providers
+      - kc-v-log:/opt/keycloak/log
+    command: ["start-dev"]
+    networks:
+      - orvix-local-dev-network
+
+volumes:
+  kc-v-data:
+    name: kc-data
+  kc-v-providers:
+    name: kc-providers
+  kc-v-log:
+    name: kc-log
+
+networks:
+  orvix-local-dev-network:
+    driver: bridge

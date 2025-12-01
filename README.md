@@ -54,6 +54,85 @@ docker push borispopicdev/orvix-gateway:latest
 
 ⚠️⚠️⚠️ Make sure you are in the root directory of the project when executing these commands.
 
+## About docker-compose.yaml
+
+The docker-compose.yaml file is located in the root of the repository. For now, it contains only the Keycloak container definition,
+along with the `orvix-local-dev-network` network configuration and three volumes for the keycloak container. In local development
+setup Keycloak runs with an H2 in-memory database. I decided not to introduce a PostgresSQL container for at this early stage of
+the gateway's development, but this will be changed relatively soon.
+
+Now, regarding the main topic (see the task [OX-27](https://bpbu.atlassian.net/browse/OX-27)
+and [the merge/pull request](https://github.com/borispopicbusiness/orvix-gateway/pull/7)), I think it is important to highlight
+the role of `mem_limit` and how it relates to Docker v2/3, Docker Swarm etc.
+
+The mem_limit field is still recognized for backward compatibility in Compose file format v2, but it is deprecated in v3,
+which was designed primarily for Docker Swarm deployments. In Swarm mode, resource constraints must be defined under the `deploy`
+section instead (`deploy.resources.limits.memory`). Since Compose v3 ignores mem_limit outside of Swarm, it can cause confusion
+depending on the environment and tooling being used.
+
+| Compose version | Field                          | IntelliJ warning | Works in Docker? |
+|-----------------|--------------------------------|------------------|------------------|
+| v2              | mem_limit                      | &#x274C; No      | &#x2714; Yes     |
+| v3+(non-Swarm)  | mem_limit                      | &#x26A0; Yes     | &#x2714; Yes     |
+| v3+(Swarm)      | deploy.resources.limits.memory | &#x274C; No      | &#x2705; Yes     |
+
+The compose version used here is v3.9, and I do not use Docker Swarm for local development. This leaves us with two options,
+downgrade the compose version to v2, which officially incorporates `mem_limit`, or stay with v3.9, which is backward compatible with v2,
+and accept the error raised by Intellij.
+
+Given that v3.9 is backward compatible and Swarm is not involved, keeping v3.9 is a reasonable choice for local development, even if it triggers an IDE warning.
+
+Regarding the docker swarm approach
+
+```yaml
+services:
+  keycloak:
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+```
+
+Since Docker Swarm is not used here, this section this part of the configuration is ignored whenever the container is started locally.
+It should be noted that `mem_limit` is still supported by Docker. Compose version 3.x incorporates it for backward compatibility with v2,
+which officially supports `mem_limit`.
+
+That said, we can inspect the effect of the property by running
+
+```bash
+docker inspect keycloak-local-dev
+```
+
+and we see `"Memory"` in 
+
+```json
+"HostConfig": {
+            "Binds": null,
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "json-file",
+                "Config": {}
+            },
+            "NetworkMode": "orvix-gateway_network",
+            ...
+            "Memory": 2147483648,
+	    ...
+```
+
+or by executing
+
+```bash
+docker inspect keycloak-local-dev | jq ".[0].HostConfig.Memory"
+```
+
+Remember
+
+```bash
+docker inspect <image-name>
+```
+
+does not show the `Memory` field.
+
 ## Microservice Endpoints
 
 The microservice exposes the following Actuator endpoints, which can be used for health checks and informational purposes in a Kubernetes environment:
