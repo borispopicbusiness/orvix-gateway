@@ -9,7 +9,7 @@ spring:
       config:
         name: gateway-configmap
         namespace: dev
-        enableApi: true   # read from Kubernetes API
+        enableApi: true
         include-profile-specific-sources: false
       reload:
         enabled: true
