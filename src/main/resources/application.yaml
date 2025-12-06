@@ -6,6 +6,16 @@ spring:
     name: gateway
   cloud:
     kubernetes:
+      config:
+        name: gateway-configmap
+        namespace: dev
+        enableApi: true
+        include-profile-specific-sources: false
+      reload:
+        enabled: true
+        mode: event
+        strategy: refresh
+        monitoring-config-maps: true
       client:
         namespace: dev
       discovery:
@@ -18,6 +28,9 @@ spring:
         locator:
           enabled: true
           lower-case-service-id: true
+  config:
+    import: "optional:kubernetes:"
+
 
 management:
   endpoints:
@@ -26,6 +39,8 @@ management:
         include:
           - health
           - info
+          - refresh
+
   info:
     env:
       enabled: true
