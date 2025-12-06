@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@RefreshScope
 @RestController
 @RequestMapping("/api/v1/diagnostics")
 public class DiagnosticsController {
