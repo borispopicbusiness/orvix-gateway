@@ -15,7 +15,7 @@ public class SecurityConfiguration {
          http
              .csrf(ServerHttpSecurity.CsrfSpec::disable)
              .authorizeExchange(auth -> auth
-                     .pathMatchers("/actuator/**", "/public/**").permitAll()
+                     .pathMatchers("/actuator/**", "/api/v1/diagnostics/**").permitAll()
                      .anyExchange().authenticated()
              )
              .httpBasic(Customizer.withDefaults());
