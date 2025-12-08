@@ -30,6 +30,11 @@ spring:
           lower-case-service-id: true
   config:
     import: "optional:kubernetes:"
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9090/realms/orvix-realm
 
 
 management:
@@ -50,3 +55,9 @@ info:
     name: Orvix Gateway
     version: 1.0.0
     description: Orvix Gateway microservice
+
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG

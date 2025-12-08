@@ -9,6 +9,8 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.List;
 
@@ -20,13 +22,15 @@ public class DiagnosticsController {
     public DiagnosticsController(DiscoveryClient discoveryClient) {
         this.discoveryClient = discoveryClient;
     }
+
     @ApiResponse(responseCode = "200",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                     array = @ArraySchema(schema = @Schema(implementation = String.class))
             )
     )
-    @GetMapping("/cloud/service/test")
-    public List<String> getCloudDiagnostics() {
-        return discoveryClient.getServices();
+    @GetMapping("/cloud/services/all")
+    public Mono<List<String>> getCloudServices() {
+        return Mono.fromSupplier(discoveryClient::getServices)
+                .subscribeOn(Schedulers.boundedElastic());
     }
 }

@@ -15,10 +15,11 @@ public class SecurityConfiguration {
          http
              .csrf(ServerHttpSecurity.CsrfSpec::disable)
              .authorizeExchange(auth -> auth
-                     .pathMatchers("/actuator/**", "/api/v1/diagnostics/**").permitAll()
+                     .pathMatchers("/actuator/**").permitAll()
+                     .pathMatchers("/api/v1/diagnostics/**").authenticated()
                      .anyExchange().authenticated()
              )
-             .httpBasic(Customizer.withDefaults());
+             .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
 
          return http.build();
     }
