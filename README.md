@@ -137,10 +137,11 @@ does not show the `Memory` field.
 
 The microservice exposes the following Actuator endpoints, which can be used for health checks and informational purposes in a Kubernetes environment:
 
-| Endpoint               | Description                                   |
-|------------------------|-----------------------------------------------|
-| **`/actuator/health`** | Returns the health status of the application  |
-| **`/actuator/info`**   | Provides general application information      |
+| Endpoint                                     | Description                                                |
+|----------------------------------------------|------------------------------------------------------------|
+| **`/actuator/health`**                       | Returns the health status of the application               |
+| **`/actuator/info`**                         | Provides general application information                   |
+| **`/api/v1/diagnostics/cloud/services/all`** | Generates the list of available services in the k8s kuster | 
 
 ### Testing Locally
 
@@ -208,7 +209,7 @@ Please check the [orvix-infra repository](https://github.com/borispopicbusiness/
 To deploy (or upgrade) the Orvix Gateway microservice in the dev environment, I use the following Helm command:
 
 ```bash
-helm upgrade --install ./helm/gateway/ -f ./helm/gateway/values-dev.yaml --namespace dev
+helm upgrade --install gateway ./helm/gateway/ -f ./helm/gateway/values-dev.yaml --namespace dev
 ```
 
 This command installs [the Helm chart](https://github.com/borispopicbusiness/orvix-infra/tree/develop/helm/gateway) if it’s not already present, or upgrades it if it is.
