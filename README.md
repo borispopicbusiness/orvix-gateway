@@ -6,9 +6,9 @@
 
 ## Tech stack
 
-    - Java 21
-    - maven 3.9.5
-    - Spring Boot 3.3.4
+    - Java 21 / Spring Boot 3.3.4 / Spring Cloud / Spring Kubernetes / Spring Security
+    - Maven 3.9.5
+    - Docker / Kubernetes / Calico / Traefik / MetalLB / Sealed Secrets
 
 ## Build and Run
 
@@ -246,3 +246,92 @@ kubectl get all -n dev
     replicaset.apps/gateway-868759df7d   1         1         1       63m
     boris@boris-Nitro-AN515-58:~/core-repos/orvix/orvix-infra$
 
+
+## Testing inter-cluster communication between gateway and Keycloak
+
+For more information about the integration of Keycloak read [README.md](https://github.com/borispopicbusiness/orvix-infra/blob/develop/environments/dev/keycloak/README.md) from orvix-infra repository.
+
+I will not repeat myself but as shown in the referenced [README.md](https://github.com/borispopicbusiness/orvix-infra/blob/develop/environments/dev/keycloak/README.md) file the endpoint responsible for processing
+diagnostics requests used for listing available services and the shown services by executing `keycloak get svc -m dev` are identical.
+And that is the expected behavior.
+
+During the setup, I installed [MetalLB](https://github.com/borispopicbusiness/orvix-infra/tree/develop/environments/misc/metallb) and configured an [IP pool](https://github.com/borispopicbusiness/orvix-infra/blob/develop/environments/misc/metallb/metallb-values.yaml), which resolved the ISS issue with Keycloak.
+The root cause was that the system did not maintain consistent ISS fields in JWT tokens for external and internal traffic.
+Our services are now externally exposed as shown below:
+
+
+    boris@boris-Nitro-AN515-58:~/core-repos/orvix/orvix-gateway$ kubectl get ingress -n dev
+    NAME                     CLASS     HOSTS                               ADDRESS         PORTS   AGE
+    gateway                  traefik   gateway.dev.k8s-svc.homelab         192.168.1.242   80      21h
+    keycloak-dev-keycloakx   traefik   keycloak-dev.keycloak.example.com   192.168.1.242   80      7h28m
+    boris@boris-Nitro-AN515-58:~/core-repos/orvix/orvix-gateway$ 
+
+
+To demonstrate that the iss problem is successfully resolved I will provide as proof two results generated for that purpose. These results show
+the decoded values from two JWT tokens, one internal and one external.
+
+The external iss value:
+
+    boris@boris-Nitro-AN515-58:~/core-repos/orvix/orvix-gateway$ kubectl get ingress -n dev
+    NAME                     CLASS     HOSTS                               ADDRESS         PORTS   AGE
+    gateway                  traefik   gateway.dev.k8s-svc.homelab         192.168.1.242   80      21h
+    keycloak-dev-keycloakx   traefik   keycloak-dev.keycloak.example.com   192.168.1.242   80      7h28m
+    boris@boris-Nitro-AN515-58:~/core-repos/orvix/orvix-gateway$ curl -X POST \
+        -d "grant_type=password" \
+        -d "client_id=orvix-gateway-dev-local" \
+        -d "username=user-dev-local" \
+        -d "password=develop" \
+        -d "scope=openid" \
+        http://keycloak-dev.keycloak.example.com/auth/realms/orvix-realm/protocol/openid-connect/token | \
+        jq -r '.access_token' | \
+        cut --delimiter='.' -f2 | \
+        base64 --decode | \
+        jq -r ".iss"
+    % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+    Dload  Upload   Total   Spent    Left  Speed
+    100  3684  100  3577  100   107  34680   1037 --:--:-- --:--:-- --:--:-- 35766
+    http://keycloak-dev.keycloak.example.com/auth/realms/orvix-realm
+    boris@boris-Nitro-AN515-58:~/core-repos/orvix/orvix-gateway$ 
+
+As we can see the external iss stores `http://keycloak-dev.keycloak.example.com/auth/realms/orvix-realm`.
+
+The internal iss value:
+
+    boris@boris-Nitro-AN515-58:~/core-repos/orvix/orvix-gateway$ kubectl get pods -n dev
+    NAME                       READY   STATUS    RESTARTS     AGE
+    gateway-68f66bbf88-rqb4p   1/1     Running   4 (9h ago)   22h
+    keycloak-dev-keycloakx-0   1/1     Running   0            8h
+    boris@boris-Nitro-AN515-58:~/core-repos/orvix/orvix-gateway$ kubectl exec -it gateway-68f66bbf88-rqb4p -n dev -- bash
+    root@gateway-68f66bbf88-rqb4p:/app# curl -X POST \
+        -d "grant_type=password" \
+        -d "client_id=orvix-gateway-dev-local" \
+        -d "username=user-dev-local" \
+        -d "password=develop" \
+        -d "scope=openid" \
+        http://keycloak-dev.keycloak.example.com/auth/realms/orvix-realm/protocol/openid-connect/token | \
+        jq -r '.access_token' | \
+        cut --delimiter='.' -f2 | \
+        base64 --decode | \
+        jq -r ".iss"
+    % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+    Dload  Upload   Total   Spent    Left  Speed
+    100  3684  100  3577  100   107  22933    686 --:--:-- --:--:-- --:--:-- 24078
+    http://keycloak-dev.keycloak.example.com/auth/realms/orvix-realm
+    root@gateway-68f66bbf88-rqb4p:/app#
+
+The internal iss value is `http://keycloak-dev.keycloak.example.com/auth/realms/orvix-realm`. They are identical
+
+And here is the response from a successfully processed `GET` request to `/api/v1/diagnostics/cloud/services/all`
+
+    boris@boris-Nitro-AN515-58:~/core-repos/orvix/orvix-gateway$ curl -H "Host: gateway.dev.k8s-svc.homelab" \
+        -H "Authorization: Bearer <access-token>" \
+        http://keycloak-dev.keycloak.example.com/api/v1/diagnostics/cloud/services/all | jq
+    % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+    Dload  Upload   Total   Spent    Left  Speed
+    100    75  100    75    0     0   2694      0 --:--:-- --:--:-- --:--:--  2777
+    [
+        "gateway",
+        "keycloak-dev-keycloakx-headless",
+        "keycloak-dev-keycloakx-http"
+    ]
+    boris@boris-Nitro-AN515-58:~/core-repos/orvix/orvix-gateway$ 
