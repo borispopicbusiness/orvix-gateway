@@ -325,7 +325,7 @@ And here is the response from a successfully processed `GET` request to `/api/v1
 
     boris@boris-Nitro-AN515-58:~/core-repos/orvix/orvix-gateway$ curl -H "Host: gateway.dev.k8s-svc.homelab" \
         -H "Authorization: Bearer <access-token>" \
-        http://keycloak-dev.keycloak.example.com/api/v1/diagnostics/cloud/services/all | jq
+        http://gateway.dev.k8s-svc.homelab/api/v1/diagnostics/cloud/services/all | jq
     % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
     Dload  Upload   Total   Spent    Left  Speed
     100    75  100    75    0     0   2694      0 --:--:-- --:--:-- --:--:--  2777
