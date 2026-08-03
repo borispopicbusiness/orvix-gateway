@@ -11,6 +11,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Global gateway filter responsible for propagating authenticated user
@@ -42,7 +43,9 @@ import java.util.Map;
  * </p>
  */
 @Component
-public class JwtIdentityPropagationFilter implements GlobalFilter {
+public class JwtIdentityAndCorrelationIdPropagationFilter implements GlobalFilter {
+
+    private static final String HEADER = "X-Correlation-Id";
 
     /**
      * Extracts JWT claims from the authenticated principal and propagates them
@@ -69,6 +72,12 @@ public class JwtIdentityPropagationFilter implements GlobalFilter {
                             ? (List<String>) realmAccess.get("roles")
                             : List.of();
 
+                    String correlationId = exchange.getRequest().getHeaders().getFirst(HEADER);
+
+                    if(correlationId == null || correlationId.isEmpty()) {
+                        correlationId = UUID.randomUUID().toString().replace("-", "");
+                    }
+
                     ServerHttpRequest mutatedRequest =
                             exchange.getRequest()
                                     .mutate()
@@ -76,7 +85,8 @@ public class JwtIdentityPropagationFilter implements GlobalFilter {
                                     .header("X-Username", username)
                                     .header("X-User-Roles",
                                             String.join(",", roles)
-                                    ).build();
+                                    ).header("X-Correlation-Id", correlationId)
+                                    .build();
 
                     return chain.filter(
                             exchange.mutate()

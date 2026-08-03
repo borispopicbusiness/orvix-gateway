@@ -16,12 +16,13 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockJwt;
 
 @SpringBootTest
 @AutoConfigureWebTestClient
 @ActiveProfiles("test")
-class JwtIdentityPropagationIntegrationTest {
+class JwtIdentityAmdCorrelationIdPropagationIntegrationTest {
 
     private static MockWebServer  mockWebServer;
 
@@ -62,5 +63,6 @@ class JwtIdentityPropagationIntegrationTest {
         assertEquals("123", request.getHeader("X-User-Id"));
         assertEquals("boris", request.getHeader("X-Username"));
         assertEquals("ADMIN,USER", request.getHeader("X-User-Roles"));
+        assertTrue(!request.getHeader("X-Correlation-Id").isEmpty());
     }
 }
