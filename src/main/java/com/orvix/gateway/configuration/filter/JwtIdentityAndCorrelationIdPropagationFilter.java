@@ -15,12 +15,13 @@ import java.util.UUID;
 
 /**
  * Global gateway filter responsible for propagating authenticated user
- * identity information from JWT claims into downstream HTTP headers.
+ * identity information from JWT claims and a generated correlation id into downstream HTTP headers.
  *
  * <p>
  * This filter extracts selected claims from the authenticated JWT issued
  * by Keycloak and forwards them as trusted internal headers so downstream
- * microservices do not need to parse JWTs themselves.
+ * microservices do not need to parse JWTs themselves. It also generates a random correlation id
+ * and adds it as an HTTP header for request tracing.
  * </p>
  *
  * <p>
@@ -31,6 +32,7 @@ import java.util.UUID;
  *     <li>{@code X-User-Id} - User identifier extracted from the JWT subject</li>
  *     <li>{@code X-Username} - Preferred username</li>
  *     <li>{@code X-User-Roles} - Comma-separated list of realm roles</li>
+ *     <li>{@code X-Correlation-Id} - Correlation ID, a random UUID, the '-'s are removed</li>
  * </ul>
  *
  * <p>
@@ -48,7 +50,7 @@ public class JwtIdentityAndCorrelationIdPropagationFilter implements GlobalFilte
     private static final String HEADER = "X-Correlation-Id";
 
     /**
-     * Extracts JWT claims from the authenticated principal and propagates them
+     * Extracts JWT claims from the authenticated principal, generate a correlation ID, and propagates them
      * as HTTP headers to downstream services.
      *
      * @param exchange current server web exchange
