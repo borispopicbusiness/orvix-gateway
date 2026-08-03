@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -11,6 +12,7 @@ import reactor.test.StepVerifier;
 import java.util.List;
 
 @SpringBootTest
+@ActiveProfiles("test")
 class DiagnosticsControllerTest {
 
     @MockitoBean
