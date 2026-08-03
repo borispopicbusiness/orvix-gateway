@@ -28,6 +28,11 @@ spring:
         locator:
           enabled: true
           lower-case-service-id: true
+      routes:
+        - id: diagnostics
+          uri: ${downstream.uri}
+          predicates:
+            - Path=/api/v1/diagnostics/gateway/services/all
   config:
     import: "optional:kubernetes:"
   security:
