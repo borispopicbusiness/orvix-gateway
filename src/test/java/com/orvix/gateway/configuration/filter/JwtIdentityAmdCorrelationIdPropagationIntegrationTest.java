@@ -52,7 +52,7 @@ class JwtIdentityAmdCorrelationIdPropagationIntegrationTest {
                                 .claim("username", "boris")
                                 .claim("realm_access",
                                         Map.of("roles",
-                                                List.of("ADMIN", "USER")))))
+                                                List.of("default-roles-orvix-realm", "offline_access", "uma_authorization")))))
                 .get()
                 .uri("/api/v1/diagnostics/gateway/services/all")
                 .exchange()
@@ -62,7 +62,7 @@ class JwtIdentityAmdCorrelationIdPropagationIntegrationTest {
 
         assertEquals("123", request.getHeader("X-User-Id"));
         assertEquals("boris", request.getHeader("X-Username"));
-        assertEquals("ADMIN,USER", request.getHeader("X-User-Roles"));
+        assertEquals("default-roles-orvix-realm,offline_access,uma_authorization", request.getHeader("X-User-Roles"));
         assertTrue(!request.getHeader("X-Correlation-Id").isEmpty());
     }
 }
