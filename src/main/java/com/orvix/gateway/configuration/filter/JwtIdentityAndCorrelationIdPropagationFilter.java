@@ -1,5 +1,6 @@
 package com.orvix.gateway.configuration.filter;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -45,6 +46,7 @@ import java.util.UUID;
  * </p>
  */
 @Component
+@Slf4j
 public class JwtIdentityAndCorrelationIdPropagationFilter implements GlobalFilter {
 
     private static final String HEADER = "X-Correlation-Id";
@@ -59,6 +61,7 @@ public class JwtIdentityAndCorrelationIdPropagationFilter implements GlobalFilte
      */
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        log.info("JwtIdentityAndCorrelationIdPropagationFilter -> filter started");
         return exchange.getPrincipal()
                 .cast(JwtAuthenticationToken.class)
                 .flatMap(authenticationToken -> {
