@@ -335,3 +335,38 @@ And here is the response from a successfully processed `GET` request to `/api/v1
         "keycloak-dev-keycloakx-http"
     ]
     boris@boris-Nitro-AN515-58:~/core-repos/orvix/orvix-gateway$ 
+
+## Testing the global filter that examines JWT tokens, generates a correlation id, and sends a new package downstream
+
+Here I will demonstrate how the global filter that examines JWT tokens, generates a correlation id, and sends a new package downstream.
+For this purpose we need **nc** because we need a simple web server to act as the downstream the downstream's termination point that receives requests and lets us examine the headers and bodies of the received packages.
+
+Start **nc** on port **8080**:
+```bash
+nc -lv 8080
+```
+
+First, we need an access token. We can obtain one by executing the following curl command in the local shell:
+```yaml
+curl -X POST \
+    -d "grant_type=password" \
+    -d "client_id=orvix-gateway-dev-local" \
+    -d "username=user-dev-local" \
+    -d "password=develop" \
+    -d "scope=openid" \
+    http://keycloak-dev.keycloak.example.com/auth/realms/orvix-realm/protocol/openid-connect/token | \
+    jq -r '.access_token'
+```
+
+The command above sends a request to Keycloak and uses jq to extract the access_token from the JSON response.
+
+Copy the returned access token and replace <access-token> in the following command with it:
+```bash
+curl -H "Host: gateway.dev.k8s-svc.homelab" \
+    -H "Authorization: Bearer <access-token>" \
+    http://gateway.dev.k8s-svc.homelab/api/v1/diagnostics/gateway/services/all | jq
+```
+
+The request is sent to the gateway with the JWT access token in the Authorization header. The global filter processes the JWT, generates a correlation ID, and forwards the request downstream.
+
+The nc process listening on port 8080 allows us to observe the HTTP request that the gateway sends to the downstream service.
