@@ -57,9 +57,9 @@ docker push borispopicdev/orvix-gateway:latest
 ## About docker-compose.yaml
 
 The docker-compose.yaml file is located in the root of the repository. For now, it contains only the Keycloak container definition,
-along with the `orvix-local-dev-network` network configuration and three volumes for the keycloak container. In local development
-setup Keycloak runs with an H2 in-memory database. I decided not to introduce a PostgresSQL container for at this early stage of
-the gateway's development, but this will be changed relatively soon.
+and the gateway container definition, along with the `orvix-local-dev-network` network configuration and three volumes for
+the keycloak container. In local development setup Keycloak runs with an H2 in-memory database. I decided not to introduce a PostgresSQL
+container for at this early stage of the gateway's development, but this will be changed relatively soon.
 
 Now, regarding the main topic (see the task [OX-27](https://bpbu.atlassian.net/browse/OX-27)
 and [the merge/pull request](https://github.com/borispopicbusiness/orvix-gateway/pull/7)), I think it is important to highlight
