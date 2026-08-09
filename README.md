@@ -57,9 +57,9 @@ docker push borispopicdev/orvix-gateway:latest
 ## About docker-compose.yaml
 
 The docker-compose.yaml file is located in the root of the repository. For now, it contains only the Keycloak container definition,
-along with the `orvix-local-dev-network` network configuration and three volumes for the keycloak container. In local development
-setup Keycloak runs with an H2 in-memory database. I decided not to introduce a PostgresSQL container for at this early stage of
-the gateway's development, but this will be changed relatively soon.
+and the gateway container definition, along with the `orvix-local-dev-network` network configuration and three volumes for
+the keycloak container. In local development setup Keycloak runs with an H2 in-memory database. I decided not to introduce a PostgresSQL
+container for at this early stage of the gateway's development, but this will be changed relatively soon.
 
 Now, regarding the main topic (see the task [OX-27](https://bpbu.atlassian.net/browse/OX-27)
 and [the merge/pull request](https://github.com/borispopicbusiness/orvix-gateway/pull/7)), I think it is important to highlight
@@ -132,6 +132,51 @@ docker inspect <image-name>
 ```
 
 does not show the `Memory` field.
+
+For local development of orvix-gateway-local, I added the following configuration:
+```yaml
+ports:
+  ...
+  - "5005:5005"
+environment:
+  - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+  - DOWNSTREAM_URI=http://downstream:8080
+extra_hosts:
+  - "host.docker.internal:host-gateway"
+  - "downstream:host-gateway"
+```
+
+The additional configuration serves three purposes:
+- "5005:5005" exposes port 5005 from the orvix-gateway-local container to the host. This is the port used for Java remote debugging.
+- JAVA_TOOL_OPTIONS=... enables the JVM's JDWP (Java Debug Wire Protocol) agent:
+  - transport=dt_socket uses a TCP socket for debugging.
+  - server=y makes the JVM listen for a debugger connection.
+  - suspend=n allows the application to start normally without waiting for a debugger.
+  - address=*:5005 makes the debugger listen on port 5005 on all container interfaces.
+
+This allows an IDE such as IntelliJ IDEA to attach a debugger to the locally running gateway.
+- DOWNSTREAM_URI=http://downstream:8080 configures the gateway to send downstream requests to the hostname downstream on port 8080.
+
+Because the downstream server is not running inside the Docker network, but instead is started directly on the host with:
+```bash
+nc -lv 8080
+```
+the downstream hostname must be mapped to the Docker host.
+Therefore, the orvix-gateway-local service uses:
+```yaml
+extra_hosts:
+  - "host.docker.internal:host-gateway"
+  - "downstream:host-gateway"
+```
+The important part here is:
+```yaml
+- "downstream:host-gateway"
+```
+It makes the hostname downstream resolve to the Docker host from inside the container. Consequently, when the gateway connects to:
+    http://downstream:8080
+the connection reaches the nc process listening on port 8080 outside the Docker network.
+
+For local development, the orvix-gateway-local service temporarily uses the DOWNSTREAM_URI environment variable to configure the downstream service. Since the downstream server is started directly on the host with nc -lv 8080 rather than inside the Docker network, the downstream hostname is mapped to the Docker host using extra_hosts. This allows the gateway container to reach the host-based nc listener through http://downstream:8080.
 
 ## Microservice Endpoints
 
@@ -370,3 +415,24 @@ curl -H "Host: gateway.dev.k8s-svc.homelab" \
 The request is sent to the gateway with the JWT access token in the Authorization header. The global filter processes the JWT, generates a correlation ID, and forwards the request downstream.
 
 The nc process listening on port 8080 allows us to observe the HTTP request that the gateway sends to the downstream service.
+
+## Remote debugging
+
+For local development, the gateway can be configured to expose the JVM debugging port 5005. Add the following configuration to the deployment:
+```yaml
+ports:
+  ...
+  - "5005:5005"
+environment:
+  ...
+  - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+```
+
+The **JAVA_TOOL_OPTIONS** variable enables the Java Debug Wire Protocol (JDWP) and makes the JVM listen for debugger connections on port **5005**. The **suspend=n** option allows the application to start normally without waiting for a debugger.
+After deploying the gateway to the dev namespace, forward the debugging port from the Kubernetes deployment to the local machine:
+```bash
+kubectl port-forward deployment/gateway 5005:5005 -n dev
+```
+This makes the pod's port 5005 available on localhost:5005. The developer can then configure the IDE to attach to the JVM using:
+- Host: localhost 
+- Port: 5005

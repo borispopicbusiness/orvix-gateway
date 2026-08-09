@@ -12,11 +12,28 @@ services:
     environment:
       - KC_BOOTSTRAP_ADMIN_USERNAME=admin
       - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
+      - KC_HOSTNAME=http://keycloak:8080
+#      - KC_HTTP_RELATIVE_PATH=/auth
     volumes:
       - kc-v-data:/opt/keycloak/data
       - kc-v-providers:/opt/keycloak/providers
       - kc-v-log:/opt/keycloak/log
     command: ["start-dev"]
+    networks:
+      - orvix-local-dev-network
+  orvix-gateway-local:
+    image: borispopicdev/orvix-gateway:latest
+    container_name: orvix-gateway-local
+    hostname: orvix-gateway.local
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+      - "downstream:host-gateway"
+    ports:
+      - "8081:8080"
+      - "5005:5005"
+    environment:
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      - DOWNSTREAM_URI=http://downstream:8080
     networks:
       - orvix-local-dev-network
 
