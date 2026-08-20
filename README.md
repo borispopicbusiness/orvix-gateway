@@ -182,11 +182,12 @@ For local development, the orvix-gateway-local service temporarily uses the DOWN
 
 The microservice exposes the following Actuator endpoints, which can be used for health checks and informational purposes in a Kubernetes environment:
 
-| Endpoint                                     | Description                                                |
-|----------------------------------------------|------------------------------------------------------------|
-| **`/actuator/health`**                       | Returns the health status of the application               |
-| **`/actuator/info`**                         | Provides general application information                   |
-| **`/api/v1/diagnostics/cloud/services/all`** | Generates the list of available services in the k8s kuster | 
+| Endpoint                                        | Description                                                           |
+|-------------------------------------------------|-----------------------------------------------------------------------|
+| **`/actuator/health`**                          | Returns the health status of the application                          |
+| **`/actuator/info`**                            | Provides general application information                              |
+| **`/api/v1/diagnostics/cloud/services/all`**    | Generates the list of available services in the k8s kuster            | 
+| **`/api/v1/diagnostics/gateway/services/all`**  | Tests the temporary GlobalFilter sanitization and the downstream flow |
 
 ### Testing Locally
 
