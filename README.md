@@ -40,7 +40,7 @@ docker build -t gateway:latest .
 
 This command builds a new gateway image and tags it as `latest`
 
-Before pushing the image to the Docker repository dedicated to the gateway service, I also tag it with my Docker Hub namespace:
+This is optional but, Before pushing the image to the Docker repository dedicated to the gateway service, I also tag it with my Docker Hub namespace:
 
 ```bash
 docker tag gateway:latest borispopicdev/orvix-gateway:latest
@@ -49,7 +49,7 @@ docker tag gateway:latest borispopicdev/orvix-gateway:latest
 Finally, push the newly built image:
 
 ```bash
-docker push borispopicdev/orvix-gateway:latest
+docker push borispopicdev/orvix-gateway
 ```
 
 ⚠️⚠️⚠️ Make sure you are in the root directory of the project when executing these commands.
@@ -182,11 +182,12 @@ For local development, the orvix-gateway-local service temporarily uses the DOWN
 
 The microservice exposes the following Actuator endpoints, which can be used for health checks and informational purposes in a Kubernetes environment:
 
-| Endpoint                                     | Description                                                |
-|----------------------------------------------|------------------------------------------------------------|
-| **`/actuator/health`**                       | Returns the health status of the application               |
-| **`/actuator/info`**                         | Provides general application information                   |
-| **`/api/v1/diagnostics/cloud/services/all`** | Generates the list of available services in the k8s kuster | 
+| Endpoint                                        | Description                                                           |
+|-------------------------------------------------|-----------------------------------------------------------------------|
+| **`/actuator/health`**                          | Returns the health status of the application                          |
+| **`/actuator/info`**                            | Provides general application information                              |
+| **`/api/v1/diagnostics/cloud/services/all`**    | Generates the list of available services in the k8s kuster            | 
+| **`/api/v1/diagnostics/gateway/services/all`**  | Tests the temporary GlobalFilter sanitization and the downstream flow |
 
 ### Testing Locally
 
