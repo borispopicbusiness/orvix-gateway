@@ -33,6 +33,10 @@ spring:
           uri: ${downstream.uri}
           predicates:
             - Path=/api/v1/diagnostics/gateway/services/all
+        - id: user-diagnostics
+          uri: ${downstream.user.uri}
+          predicates:
+            - Path=/api/v1/user/**
   config:
     import: "optional:kubernetes:"
   security:
