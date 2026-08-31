@@ -1,2 +1,4 @@
 downstream:
   uri: http://localhost:8080
+  user:
+    uri: http://localhost:8081
