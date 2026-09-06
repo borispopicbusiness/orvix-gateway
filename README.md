@@ -410,7 +410,7 @@ Copy the returned access token and replace <access-token> in the following comma
 ```bash
 curl -H "Host: gateway.dev.k8s-svc.homelab" \
     -H "Authorization: Bearer <access-token>" \
-    http://gateway.dev.k8s-svc.homelab/api/v1/diagnostics/gateway/services/all | jq
+    http://gateway.dev.k8s-svc.homelab/api/v1/diagnostics/cloud/services/all | jq
 ```
 
 The request is sent to the gateway with the JWT access token in the Authorization header. The global filter processes the JWT, generates a correlation ID, and forwards the request downstream.
