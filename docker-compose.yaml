@@ -21,7 +21,7 @@ services:
     command: ["start-dev"]
     networks:
       - orvix-local-dev-network
-  postgres:
+  orvix-postgres-local-dev:
     image: postgres:latest
     container_name: orvix-postgres-local-dev
     environment:
