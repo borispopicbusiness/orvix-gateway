@@ -21,6 +21,17 @@ services:
     command: ["start-dev"]
     networks:
       - orvix-local-dev-network
+  postgres:
+    image: postgres:latest
+    container_name: orvix-postgres-local-dev
+    environment:
+      POSTGRES_DB: orvix-local-dev
+      POSTGRES_USER: postgresql-orvix-local-dev
+      POSTGRES_PASSWORD: postgresql-orvix-local-dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
   orvix-gateway-local:
     image: borispopicdev/orvix-gateway:latest
     container_name: orvix-gateway-local
@@ -92,6 +103,7 @@ volumes:
     name: kc-providers
   kc-v-log:
     name: kc-log
+  postgres_data:
 
 networks:
   orvix-local-dev-network:
